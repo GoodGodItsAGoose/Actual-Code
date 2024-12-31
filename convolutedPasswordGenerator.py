@@ -95,33 +95,57 @@ def decode(base64_string, security_level):
 #find a specific file
 def find_File(fileName):
     with open(fileName, "r") as f:
-        fileContents = f.read()
+        try:
+            fileContents = f.read()
+        except FileNotFoundError:
+            print("Please Re-Enter filename.")
+            main_Menu()
         return fileContents
 
 # checking level of security then encoding or decoding
-def security_check(input_text, security, encodeOrDecode):
+def security_check(input_text, security, encodeOrDecode, writeToFile, fileName):
     num = 1
     # Check to see what security level is
     for _ in range(5):
+
         if security != str(num):
             num += 1
+
             if num == 6:
                 print("Please re-enter choice with a valid choice.")
                 print()
                 main_Menu()
+
         else:
             if encodeOrDecode == "encode":
                 # Encode
                 encoded_text = encode_to_base64(input_text, security)
                 print(f"Encoded message: {encoded_text}")
-                pyperclip.copy(encoded_text)
-                print("Message has been copied to your clipboard.")
+
+                if writeToFile == "y":
+                    with open(fileName, "w") as f:
+                        f.write(encoded_text)
+                        f.close()
+                        print("Written to file.")
+
+                else:
+                    pyperclip.copy(encoded_text)
+                    print("Message has been copied to your clipboard.")
+
                 print()
                 main_Menu()
+
             elif encodeOrDecode == "decode":
                 # Decode
                     decoded_text = decode(input_text, security)
                     print(f"Decoded message: {decoded_text}")
+
+                    if writeToFile == "y":
+                        with open(fileName, "w") as f:
+                            f.write(decoded_text)
+                            f.close()
+                            print("Written to file.")
+
                     print()
                     main_Menu()
 
@@ -130,7 +154,22 @@ def notAnAnswer():
     print("Please re-enter choice with a valid choice.")
     print()
     main_Menu()
-                    
+
+# Added function to be able to write the encoded or decoded text into the file supplied (this is optimizing for less code)
+def writeToFileYN(input_text, security, fileName, encodeOrDecode):
+    write_to_file = input("Would you like to write the encoding to the file? NOTE: This will replace all text in the file. (y/n): ")
+
+    if write_to_file.lower() == "y":
+        print()
+        security_check(input_text, security, encodeOrDecode, "y", fileName)
+
+    elif write_to_file.lower() == "n":
+        print()
+        security_check(input_text, security, encodeOrDecode, "n", "")
+
+    else:
+        notAnAnswer()
+
 # Example usage
 if __name__ == "__main__":
     def main_Menu():
@@ -141,38 +180,40 @@ if __name__ == "__main__":
             security = input("Input level of security, 1 is minimal, 5 is maximal: ")
             print()
             security_check(input_text, security, "encode")
+
         elif decode_or_encode == "2":
             encoded_text = input("Input encoded message: ")
             security = input("Input level of security used: ")
             print()
             security_check(encoded_text, security, "decode")
+
         elif decode_or_encode == "3":
             choice = input("Input 1 to encode the file, 2 or decode the file or 3 to go back: ")
+
             if choice == "1":
-                input_text = input("Enter file name (please include any parent folders (aka, texts/boogerman.txt) please): ")
-                input_text = find_File(input_text)
+                input_file = input("Enter file name (please include any parent folders (aka, texts/boogerman.txt) ): ")
+                input_text = find_File(input_file)
                 security = input("Input level of security, 1 is minimal, 5 is maximal: ")
                 print()
-                security_check(input_text, security, "encode")
+                writeToFileYN(input_text, security, input_file, "encode")
+
             elif choice == "2":
-                encoded_text = input("Enter file name: ")
-                encoded_text = find_File(encoded_text)
+                input_file = input("Enter file name (please include any parent folders (aka, texts/boogerman.txt) ): ")
+                encoded_text = find_File(input_file)
                 security = input("Input level of security used: ")
                 print()
-                security_check(encoded_text, security, "decode")
+                writeToFileYN(encoded_text, security, input_file, "decode")
+
             elif choice == "3":
                 main_Menu()
+
             else:
                 notAnAnswer()
+
         elif decode_or_encode == "4":
             exit()
+
         else:
             notAnAnswer()
         
     main_Menu()
-#Ogni cosa ha un modo di essere?
-# encoded w/ lvl 1 encoding: O*L3YQ%OWbPBmIrLrFwQO+`^iOEXeIPF7e~Ni$kOO;S};L0U{yPfk-<MOsQX
-"""
-"""
-"""
-"""
