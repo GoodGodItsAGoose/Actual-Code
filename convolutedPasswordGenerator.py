@@ -93,17 +93,18 @@ def decode(base64_string, security_level):
     return decoded_string
 
 #find a specific file
-def find_File(fileName):
-    with open(fileName, "r") as f:
-        try:
+def find_File(fileName, fileEncoding):
+    try:
+        with open(fileName, "r", encoding=fileEncoding) as f:
             fileContents = f.read()
-        except FileNotFoundError:
-            print("Please Re-Enter filename.")
-            main_Menu()
-        return fileContents
+            return fileContents
+    except FileNotFoundError:
+        print()
+        print("Please enter file name or file encoding properly.")
+        main_Menu()
 
 # checking level of security then encoding or decoding
-def security_check(input_text, security, encodeOrDecode, writeToFile, fileName):
+def security_check(input_text, security, encodeOrDecode, writeToFile, fileName, fileEncoding):
     num = 1
     # Check to see what security level is
     for _ in range(5):
@@ -123,7 +124,7 @@ def security_check(input_text, security, encodeOrDecode, writeToFile, fileName):
                 print(f"Encoded message: {encoded_text}")
 
                 if writeToFile == "y":
-                    with open(fileName, "w") as f:
+                    with open(fileName, "w", encoding=fileEncoding) as f:
                         f.write(encoded_text)
                         f.close()
                         print("Written to file.")
@@ -141,7 +142,7 @@ def security_check(input_text, security, encodeOrDecode, writeToFile, fileName):
                     print(f"Decoded message: {decoded_text}")
 
                     if writeToFile == "y":
-                        with open(fileName, "w") as f:
+                        with open(fileName, "w", encoding=fileEncoding) as f:
                             f.write(decoded_text)
                             f.close()
                             print("Written to file.")
@@ -156,16 +157,16 @@ def notAnAnswer():
     main_Menu()
 
 # Added function to be able to write the encoded or decoded text into the file supplied (this is optimizing for less code)
-def writeToFileYN(input_text, security, fileName, encodeOrDecode):
+def writeToFileYN(input_text, security, fileName, encodeOrDecode, fileEncoding):
     write_to_file = input("Would you like to write the encoding to the file? NOTE: This will replace all text in the file. (y/n): ")
 
     if write_to_file.lower() == "y":
         print()
-        security_check(input_text, security, encodeOrDecode, "y", fileName)
+        security_check(input_text, security, encodeOrDecode, "y", fileName, fileEncoding)
 
     elif write_to_file.lower() == "n":
         print()
-        security_check(input_text, security, encodeOrDecode, "n", "")
+        security_check(input_text, security, encodeOrDecode, "n", "", fileEncoding)
 
     else:
         notAnAnswer()
@@ -192,17 +193,23 @@ if __name__ == "__main__":
 
             if choice == "1":
                 input_file = input("Enter file name (please include any parent folders (aka, texts/boogerman.txt) ): ")
-                input_text = find_File(input_file)
+                file_encoding = input("Enter file encoding (leave blank if none): ")
+                if file_encoding == "":
+                    file_encoding = None
+                input_text = find_File(input_file, file_encoding)
                 security = input("Input level of security, 1 is minimal, 5 is maximal: ")
                 print()
-                writeToFileYN(input_text, security, input_file, "encode")
+                writeToFileYN(input_text, security, input_file, "encode", file_encoding)
 
             elif choice == "2":
                 input_file = input("Enter file name (please include any parent folders (aka, texts/boogerman.txt) ): ")
-                encoded_text = find_File(input_file)
+                file_encoding = input("Enter file encoding (leave blank if none): ")
+                if file_encoding == "":
+                    file_encoding = None
+                encoded_text = find_File(input_file, file_encoding)
                 security = input("Input level of security used: ")
                 print()
-                writeToFileYN(encoded_text, security, input_file, "decode")
+                writeToFileYN(encoded_text, security, input_file, "decode", file_encoding)
 
             elif choice == "3":
                 main_Menu()
