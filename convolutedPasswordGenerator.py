@@ -1,9 +1,12 @@
 import base64
 import pyperclip
 
-def encode_to_base64(input_string, security_level):
+def encode_to_base64(input_string, security_level, other_encoding):
     #Convert the input string to bytes
-    input_bytes = bytes(input_string, "cp1252")
+    if other_encoding == None:
+        input_bytes = bytes(input_string, "cp1252")
+    else:
+        input_bytes = bytes(input_string, other_encoding)
 
     #Encode the bytes to Base64 using the security level to encode
     if security_level == "1": # note: maybe make 2-3?
@@ -42,14 +45,21 @@ def encode_to_base64(input_string, security_level):
             encoded_bytes=base64.b16encode(encoded_bytes)
             encoded_bytes=base64.a85encode(encoded_bytes)
 
-    #Convert the Base64 bytes back to a string
-    base64_string = encoded_bytes.decode("cp1252")
+    # Convert the Base64 bytes back to a string
+    if other_encoding == None:
+        base64_string = encoded_bytes.decode("cp1252")
+    else:
+        base64_string = encoded_bytes.decode(other_encoding)
 
     return base64_string
 
-def decode(base64_string, security_level):
+def decode(base64_string, security_level, other_encoding):
     #Convert the Base64 string to bytes
-    base64_bytes = bytes(base64_string, "cp1252")
+    if other_encoding == None:
+        base64_bytes = bytes(base64_string, "cp1252")
+    else:
+        base64_bytes = bytes(base64_string, other_encoding)
+    
     #Decode the Base64 bytes back to the original bytes using the security level to decode
     if security_level == "1":
         for i in range(int(security_level)+2):
@@ -87,8 +97,11 @@ def decode(base64_string, security_level):
             decoded_bytes=base64.b64decode(decoded_bytes)
             decoded_bytes=base64.b32decode(decoded_bytes)
             
-    #Convert the original bytes back to a string
-    decoded_string = decoded_bytes.decode("cp1252")
+    # Convert the original bytes back to a string
+    if other_encoding == None:
+        decoded_string = decoded_bytes.decode("cp1252")
+    else:
+        decoded_string = decoded_bytes.decode(other_encoding)
 
     return decoded_string
 
@@ -100,7 +113,11 @@ def find_File(fileName, fileEncoding):
             return fileContents
     except FileNotFoundError:
         print()
-        print("Please enter file name or file encoding properly.")
+        print("Please enter file name properly.")
+        main_Menu()
+    except LookupError:
+        print()
+        print("Please enter file encoding properly.")
         main_Menu()
 
 # checking level of security then encoding or decoding
@@ -120,7 +137,7 @@ def security_check(input_text, security, encodeOrDecode, writeToFile, fileName, 
         else:
             if encodeOrDecode == "encode":
                 # Encode
-                encoded_text = encode_to_base64(input_text, security)
+                encoded_text = encode_to_base64(input_text, security, fileEncoding)
                 print(f"Encoded message: {encoded_text}")
 
                 if writeToFile == "y":
@@ -138,7 +155,7 @@ def security_check(input_text, security, encodeOrDecode, writeToFile, fileName, 
 
             elif encodeOrDecode == "decode":
                 # Decode
-                    decoded_text = decode(input_text, security)
+                    decoded_text = decode(input_text, security, fileEncoding)
                     print(f"Decoded message: {decoded_text}")
 
                     if writeToFile == "y":
@@ -158,13 +175,21 @@ def notAnAnswer():
 
 # Added function to be able to write the encoded or decoded text into the file supplied (this is optimizing for less code)
 def writeToFileYN(input_text, security, fileName, encodeOrDecode, fileEncoding):
-    write_to_file = input("Would you like to write the encoding to the file? NOTE: This will replace all text in the file. (y/n): ")
+    # input_text is the text of the file that has been read using find_File()
+    write_to_file = input("Would you like to write the text to the file? NOTE: This will replace all text in the file. (y/n): ")
 
     if write_to_file.lower() == "y":
-        print()
         security_check(input_text, security, encodeOrDecode, "y", fileName, fileEncoding)
 
     elif write_to_file.lower() == "n":
+        write_to_new_file = input("Would you like to write the text to a different file? NOTE: This will replace the file's previous content. (y/n): ")
+        if write_to_new_file.lower() == "y":
+            file_name = input("Enter file name (please include any parent folders (aka, texts/boogerman.txt) ): ")
+            file_encoding = input("Enter file encoding (leave blank if none): ")
+            if file_encoding == "":
+                file_encoding = None
+            print()
+            security_check(input_text, security, encodeOrDecode, "y",  file_name, fileEncoding)
         print()
         security_check(input_text, security, encodeOrDecode, "n", "", fileEncoding)
 
